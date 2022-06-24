@@ -1,6 +1,37 @@
+import { gql, useMutation } from "@apollo/client";
+import { useState, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Logo } from "../components/Logo";
+import classNames from "classnames";
+
+const CREATE_SUBSCRIBE_MUTATION = gql`
+    mutation CreateSubscriber ($name: String!, $email: String!) {
+        createSubscriber(data: {name: $name, email: $email}) {
+            id
+        }
+    }
+`
 
 export function Subscribe(){
+    const navigate = useNavigate()
+    const [ name, setName ] = useState('');
+    const [ email, setEmail ] = useState('');
+
+    const [CreateSubscriber, { loading }] = useMutation(CREATE_SUBSCRIBE_MUTATION);
+
+    async function handleSubscribe(event: FormEvent){
+        event.preventDefault();
+
+        CreateSubscriber({
+            variables: {
+                name,
+                email,
+            }
+        })
+
+        navigate('/event');
+    }
+
     return(
         <div className="min-h-screen bg-blur bg-cover bg-no-repeat flex flex-col items-center">
             <div className="w-full max-w-[1100px] flex items-center justify-between mt-20 mx-auto">
@@ -15,22 +46,28 @@ export function Subscribe(){
                 </div>
                 <div className="p-8 bg-gray-700 border border-gray-500 rounded">
                     <strong className="text-2xl mb-6 block">Inscreva-se gratuitamente</strong>
-                    <form action="" className="flex flex-col gap-2 w-full">
+                    <form  
+                    className="flex flex-col gap-2 w-full"
+                    onSubmit={handleSubscribe}
+                    >
                         <input 
                         className="bg-gray-900 rounded px-5 h-14"
                         type="text" 
                         placeholder="Seu nome completo"
+                        onChange={event => setName(event.target.value)}
                         />
                         <input 
                         className="bg-gray-900 rounded px-5 h-14"
                         type="email" 
                         placeholder="Digite seu email"
+                        onChange={event => setEmail(event.target.value)}
                         />
                         <button
+                        disabled={loading}
                         type="submit"
-                        className="mt-4 bg-green-500 uppercase py-4 rounded font-bold text-sm hover:bg-green-700 transition-colors"
+                        className={classNames("mt-4 bg-green-500 uppercase py-4 rounded font-bold text-sm hover:bg-green-700 transition-colors disabled-opacity-50", {"cursor-progress": loading})}
                         >
-                           Garantir minha vaga 
+                           {loading? "Enviando...": "Garantir minha vaga"} 
                         </button>
                     </form>
                 </div>
